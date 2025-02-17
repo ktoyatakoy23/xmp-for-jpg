@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title>XMP Пресет для Lightroom (полный набор настроек)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark-theme">
+  <!-- Кнопка переключения тёмной темы -->
+  <button id="darkModeToggle" class="dark-mode-toggle">Светлая тема</button>
+
+  <div class="container" id="originalInterface">
+    <h1>XMP Пресет для Lightroom</h1>
+    <div id="xmpOutput"></div>
+    <div id="cameraInfo"></div>
+    <label for="fileInput" class="btn-download">Загрузите фото</label>
+    <input type="file" id="fileInput" accept="image/jpeg,image/png">
+    <!-- Кнопка для показа/скрытия таблицы XMP -->
+    <button class="btn-download" id="toggleMetadataBtn">Показать XMP таблицу</button>
+    <div id="metadataContainer">
+      <div id="metadataOutput"></div>
+    </div>
+  </div>
+
+  <!-- Имитация интерфейса Lightroom -->
+  <div id="lightroomInterface">
+    <h2>Интерфейс Lightroom</h2>
+    <!-- Основные настройки -->
+    <div class="slider-group">
+      <h3>Основные настройки</h3>
+      <!-- Температура: градиент от синего (слева) к жёлтому (справа) -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Температура</div>
+          <div class="slider-value" id="tempSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, blue, yellow);">
+          <div class="slider-knob" id="tempSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Оттенок: градиент от зелёного (слева) к фиолетовому (справа) -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Оттенок</div>
+          <div class="slider-value" id="tintSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, green, violet);">
+          <div class="slider-knob" id="tintSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Экспозиция: градиент от светло-серого к темно-серому -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Экспозиция</div>
+          <div class="slider-value" id="exposureSliderValue">0.00</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="exposureSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Контрастность -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Контрастность</div>
+          <div class="slider-value" id="contrastSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="contrastSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Светлые области -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Светлые области</div>
+          <div class="slider-value" id="highlightsSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="highlightsSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Тени -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Тени</div>
+          <div class="slider-value" id="shadowsSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="shadowsSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Белые -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Белые</div>
+          <div class="slider-value" id="whitesSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="whitesSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Черные -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Черные</div>
+          <div class="slider-value" id="blacksSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="blacksSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Текстура -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Текстура</div>
+          <div class="slider-value" id="textureSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="textureSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Четкость -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Четкость</div>
+          <div class="slider-value" id="claritySliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="claritySliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Удаление дымки -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Удаление дымки</div>
+          <div class="slider-value" id="dehazeSliderValue">0</div>
+        </div>
+        <div class="slider-track" style="background: linear-gradient(to right, #d3d3d3, #4f4f4f);">
+          <div class="slider-knob" id="dehazeSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+      <!-- Красочность (Vibrance): для значений до -35 – плавный градиент от серого, затем радуга -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Красочность</div>
+          <div class="slider-value" id="vibranceSliderValue">0</div>
+        </div>
+        <div class="slider-track"
+          style="background: linear-gradient(to right, gray 0%, gray 32.5%, #bfbfbf 35%, yellow 40%, green 55%, cyan 65%, blue 75%, purple 85%, magenta 100%);">
+          <div class="slider-knob" id="vibranceSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+
+      <!-- Насыщенность: аналогичный градиент -->
+      <div class="slider">
+        <div class="slider-header">
+          <div class="slider-label">Насыщенность</div>
+          <div class="slider-value" id="saturationSliderValue">0</div>
+        </div>
+        <div class="slider-track"
+          style="background: linear-gradient(to right, gray 0%, gray 32.5%, #bfbfbf 35%, yellow 40%, green 55%, cyan 65%, blue 75%, purple 85%, magenta 100%);">
+          <div class="slider-knob" id="saturationSliderKnob" style="left: 50%;"></div>
+        </div>
+      </div>
+
+      <!-- HSL – ТОН -->
+      <div class="slider-group">
+        <h3>HSL – ТОН</h3>
+        <!-- Красный: слева малиновый, справа охра -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Красный</div>
+            <div class="slider-value" id="hueRedSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #DC143C, #CC7722);">
+            <div class="slider-knob" id="hueRedSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Оранжевый: слева апельсиновый, уходящий в красный; справа желтый с зеленым подтоном -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Оранжевый</div>
+            <div class="slider-value" id="hueOrangeSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #FF8C00, #FF4500, #9ACD32);">
+            <div class="slider-knob" id="hueOrangeSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Желтый: слева охра с фиолетовым подтоном; справа салатовый -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Желтый</div>
+            <div class="slider-value" id="hueYellowSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #996633, #9ACD32);">
+            <div class="slider-knob" id="hueYellowSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Зеленый: слева салатовый; справа изумрудный -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Зеленый</div>
+            <div class="slider-value" id="hueGreenSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #9ACD32, #50C878);">
+            <div class="slider-knob" id="hueGreenSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Цвет морской волны: слева изумрудно-салатовый; справа синий -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Цвет морской волны</div>
+            <div class="slider-value" id="hueAquaSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #66CDAA, #1E90FF);">
+            <div class="slider-knob" id="hueAquaSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Синий: слева бирюзовый; справа фиолетовый -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Синий</div>
+            <div class="slider-value" id="hueBlueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #40E0D0, #8A2BE2);">
+            <div class="slider-knob" id="hueBlueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Фиолетовый: слева фиолетовый; справа пурпурный -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Фиолетовый</div>
+            <div class="slider-value" id="huePurpleSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #800080, #FF00FF);">
+            <div class="slider-knob" id="huePurpleSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Пурпурный: слева пурпурный; справа красный -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Пурпурный</div>
+            <div class="slider-value" id="hueMagentaSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #FF00FF, #FF0000);">
+            <div class="slider-knob" id="hueMagentaSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HSL – НАСЫЩЕННОСТЬ -->
+      <div class="slider-group">
+        <h3>HSL – НАСЫЩЕННОСТЬ</h3>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Красный</div>
+            <div class="slider-value" id="saturationRedSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #ff0000);">
+            <div class="slider-knob" id="saturationRedSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Оранжевый</div>
+            <div class="slider-value" id="saturationOrangeSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #ff8c00);">
+            <div class="slider-knob" id="saturationOrangeSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Желтый</div>
+            <div class="slider-value" id="saturationYellowSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #ffff00);">
+            <div class="slider-knob" id="saturationYellowSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Зеленый</div>
+            <div class="slider-value" id="saturationGreenSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #00ff00);">
+            <div class="slider-knob" id="saturationGreenSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Цвет морской волны</div>
+            <div class="slider-value" id="saturationAquaSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #00ffff);">
+            <div class="slider-knob" id="saturationAquaSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Синий</div>
+            <div class="slider-value" id="saturationBlueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #0000ff);">
+            <div class="slider-knob" id="saturationBlueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Фиолетовый</div>
+            <div class="slider-value" id="saturationPurpleSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #800080);">
+            <div class="slider-knob" id="saturationPurpleSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Пурпурный</div>
+            <div class="slider-value" id="saturationMagentaSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2f2f2, #ff00ff);">
+            <div class="slider-knob" id="saturationMagentaSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HSL – ЯРКОСТЬ -->
+      <div class="slider-group">
+        <h3>HSL – ЯРКОСТЬ</h3>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Красный</div>
+            <div class="slider-value" id="luminanceRedSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, red, white);">
+            <div class="slider-knob" id="luminanceRedSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Оранжевый</div>
+            <div class="slider-value" id="luminanceOrangeSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, orange, white);">
+            <div class="slider-knob" id="luminanceOrangeSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Желтый</div>
+            <div class="slider-value" id="luminanceYellowSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, yellow, white);">
+            <div class="slider-knob" id="luminanceYellowSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Зеленый</div>
+            <div class="slider-value" id="luminanceGreenSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, green, white);">
+            <div class="slider-knob" id="luminanceGreenSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Цвет морской волны</div>
+            <div class="slider-value" id="luminanceAquaSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, aqua, white);">
+            <div class="slider-knob" id="luminanceAquaSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Синий</div>
+            <div class="slider-value" id="luminanceBlueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, blue, white);">
+            <div class="slider-knob" id="luminanceBlueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Фиолетовый</div>
+            <div class="slider-value" id="luminancePurpleSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, purple, white);">
+            <div class="slider-knob" id="luminancePurpleSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Пурпурный</div>
+            <div class="slider-value" id="luminanceMagentaSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, black, magenta, white);">
+            <div class="slider-knob" id="luminanceMagentaSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- КАЛИБРОВКА -->
+      <div class="slider-group">
+        <h3>КАЛИБРОВКА</h3>
+        <!-- Тени – Оттенок: градиент от зелёного до фиолетового -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Тени – Оттенок</div>
+            <div class="slider-value" id="calibrationShadowHueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, green, violet);">
+            <div class="slider-knob" id="calibrationShadowHueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Основной красный – Тон -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Основной красный – Тон</div>
+            <div class="slider-value" id="calibrationRedHueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #DC143C, #CC7722);">
+            <div class="slider-knob" id="calibrationRedHueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Основной красный – Насыщенность -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Основной красный – Насыщенность</div>
+            <div class="slider-value" id="calibrationRedSaturationSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #f2cccc, #ff0000);">
+            <div class="slider-knob" id="calibrationRedSaturationSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Основной зеленый – Тон -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Основной зеленый – Тон</div>
+            <div class="slider-value" id="calibrationGreenHueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #9ACD32, #50C878);">
+            <div class="slider-knob" id="calibrationGreenHueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Основной зеленый – Насыщенность -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Основной зеленый – Насыщенность</div>
+            <div class="slider-value" id="calibrationGreenSaturationSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #ccffcc, #00ff00);">
+            <div class="slider-knob" id="calibrationGreenSaturationSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Основной синий – Тон -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Основной синий – Тон</div>
+            <div class="slider-value" id="calibrationBlueHueSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #40E0D0, #8A2BE2);">
+            <div class="slider-knob" id="calibrationBlueHueSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+        <!-- Основной синий – Насыщенность -->
+        <div class="slider">
+          <div class="slider-header">
+            <div class="slider-label">Основной синий – Насыщенность</div>
+            <div class="slider-value" id="calibrationBlueSaturationSliderValue">0</div>
+          </div>
+          <div class="slider-track" style="background: linear-gradient(to right, #ccccff, #0000ff);">
+            <div class="slider-knob" id="calibrationBlueSaturationSliderKnob" style="left: 50%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/exifr/dist/full.umd.js"></script>
+    <script src="script.js"></script>
+
+    <!-- Глобальная область drag & drop (накрывает весь сайт) -->
+    <div id="globalDropZone">Перетащите сюда фото</div>
+  </div>
+</body>
+
+</html>
