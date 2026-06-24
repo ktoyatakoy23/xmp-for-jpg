@@ -63,7 +63,7 @@ function displayCameraInfo(meta) {
   let make = (meta.Make || "").trim();
   let model = (meta.Model || "").trim();
 
-  // Исключаем дублирование названия бренда в начале строки модели (например, Canon Canon EOS R6m2)
+  // Исключаем дублирование названия бренда в начале строки модели (например, Canon  Canon EOS R6m2)
   if (make && model && model.toLowerCase().startsWith(make.toLowerCase())) {
     make = "";
   }
