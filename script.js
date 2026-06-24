@@ -60,19 +60,26 @@ function formatValue(key, value) {
 }
 
 function displayCameraInfo(meta) {
-  const make = meta.Make || "Неизвестно";
-  const model = meta.Model || "Неизвестно";
-  // Попробуйте получить информацию об объективе из LensModel или Lens
+  let make = (meta.Make || "").trim();
+  let model = (meta.Model || "").trim();
+
+  // Исключаем дублирование названия бренда в начале строки модели (например, Canon Canon EOS R6m2)
+  if (make && model && model.toLowerCase().startsWith(make.toLowerCase())) {
+    make = "";
+  }
+
+  const cameraName = [make, model].filter(Boolean).join(" ") || "Неизвестно";
   const lens = meta.LensModel || meta.Lens || "";
   const exposure = meta.ExposureTime ? formatExposure(meta.ExposureTime) : "N/A";
   const aperture = meta.FNumber ? "f/" + meta.FNumber : "N/A";
   const iso = meta.ISOSpeedRatings || meta.ISO || "N/A";
   const date = meta.DateTimeOriginal ? formatDate(meta.DateTimeOriginal) : "N/A";
   const lensInfo = lens ? `<p><strong>Объектив:</strong> ${lens}</p>` : "";
+
   const infoHtml = `
 <div class="info">
   <h2>Информация о съёмке</h2>
-  <p><strong>Камера:</strong> ${make} ${model}</p>
+  <p><strong>Камера:</strong> ${cameraName}</p>
   ${lensInfo}
   <p><strong>Настройки:</strong> Экспозиция ${exposure}, ${aperture}, ISO ${iso}</p>
   <p><strong>Дата съёмки:</strong> ${date}</p>
@@ -102,10 +109,38 @@ function generateXMP(lrData) {
   xml += `  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n`;
   xml += `    <rdf:Description rdf:about=""\n`;
   xml += `      xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"\n`;
+
+  // Сначала пишем плоские параметры как XML-атрибуты
   for (let key in lrData) {
-    xml += `      crs:${key}="${lrData[key]}"\n`;
+    if (key.startsWith("ToneCurve") && typeof lrData[key] === "string" && lrData[key].includes(";")) {
+      continue; // Пропускаем сложные кривые, запишем их ниже в виде вложенных тегов
+    }
+    // Защита от спецсимволов внутри атрибутов
+    let safeValue = String(lrData[key])
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    xml += `      crs:${key}="${safeValue}"\n`;
   }
-  xml += `    />\n`;
+  xml += `    >\n`;
+
+  // Затем записываем тоновые кривые в корректном формате списков <rdf:Seq>
+  for (let key in lrData) {
+    if (key.startsWith("ToneCurve") && typeof lrData[key] === "string" && lrData[key].includes(";")) {
+      xml += `      <crs:${key}>\n        <rdf:Seq>\n`;
+      let points = lrData[key].split(";");
+      for (let point of points) {
+        let trimmed = point.trim();
+        if (trimmed !== "") {
+          xml += `          <rdf:li>${trimmed}</rdf:li>\n`;
+        }
+      }
+      xml += `        </rdf:Seq>\n      </crs:${key}>\n`;
+    }
+  }
+
+  xml += `    </rdf:Description>\n`;
   xml += `  </rdf:RDF>\n`;
   xml += `</x:xmpmeta>\n`;
   xml += `<?xpacket end='w'?>`;
@@ -133,54 +168,6 @@ function normalizeSliderValue(key, value) {
       break;
     case 'Exposure2012':
       percentage = ((numericValue + 5) / 10) * 100;
-      break;
-    case 'Contrast2012':
-    case 'Highlights2012':
-    case 'Shadows2012':
-    case 'Whites2012':
-    case 'Blacks2012':
-    case 'Texture':
-    case 'Clarity2012':
-    case 'Dehaze':
-    case 'Vibrance':
-    case 'Saturation':
-      percentage = ((numericValue + 100) / 200) * 100;
-      break;
-    // HSL и калибровка (диапазон -100…100)
-    case 'HueAdjustmentRed':
-    case 'HueAdjustmentOrange':
-    case 'HueAdjustmentYellow':
-    case 'HueAdjustmentGreen':
-    case 'HueAdjustmentAqua':
-    case 'HueAdjustmentBlue':
-    case 'HueAdjustmentPurple':
-    case 'HueAdjustmentMagenta':
-    case 'SaturationAdjustmentRed':
-    case 'SaturationAdjustmentOrange':
-    case 'SaturationAdjustmentYellow':
-    case 'SaturationAdjustmentGreen':
-    case 'SaturationAdjustmentAqua':
-    case 'SaturationAdjustmentBlue':
-    case 'SaturationAdjustmentPurple':
-    case 'SaturationAdjustmentMagenta':
-    case 'LuminanceAdjustmentRed':
-    case 'LuminanceAdjustmentOrange':
-    case 'LuminanceAdjustmentYellow':
-    case 'LuminanceAdjustmentGreen':
-    case 'LuminanceAdjustmentAqua':
-    case 'LuminanceAdjustmentBlue':
-    case 'LuminanceAdjustmentPurple':
-    case 'LuminanceAdjustmentMagenta':
-    case 'ShadowTint':
-    case 'RedHue':
-    case 'GreenHue':
-    case 'BlueHue':
-      percentage = ((numericValue + 100) / 200) * 100;
-      break;
-    case 'RedSaturation':
-    case 'GreenSaturation':
-    case 'BlueSaturation':
-      percentage = ((numericValue + 100) / 200) * 100;
       break;
     default:
       percentage = ((numericValue + 100) / 200) * 100;
@@ -259,6 +246,12 @@ function processFile(file) {
         lrData[key] = formatValue(key, meta[key]);
       }
     });
+
+    // Фикс баланса белого: принудительный кастомный баланс, если есть температура или тинт
+    if (lrData['Temperature'] !== undefined || lrData['Tint'] !== undefined) {
+      lrData['WhiteBalance'] = "Custom";
+    }
+
     if (Object.keys(lrData).length < THRESHOLD) {
       displayFallback(meta);
       displayMetadata(lrData);
@@ -266,6 +259,7 @@ function processFile(file) {
       generateXMPButton(lrData);
       displayMetadata(lrData);
     }
+
     // Обновление слайдеров
     for (const key in lrData) {
       if (sliderMap[key]) {
@@ -352,6 +346,7 @@ const sliderMap = {
   BlueHue: 'calibrationBlueHueSliderKnob',
   BlueSaturation: 'calibrationBlueSaturationSliderKnob'
 };
+
 // Предотвращаем стандартное поведение для drag & drop событий
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
   document.addEventListener(eventName, function (e) {
@@ -360,17 +355,15 @@ const sliderMap = {
   });
 });
 
-// При входе в зону перетаскивания – показываем глобальную область
+// Показ глобальной drop-зоны
 document.addEventListener('dragenter', function (e) {
   document.getElementById('globalDropZone').classList.add('visible');
 });
 
-// При уходе курсора – скрываем область (можно добавить дополнительную проверку, если нужно)
 document.addEventListener('dragleave', function (e) {
   document.getElementById('globalDropZone').classList.remove('visible');
 });
 
-// При отпускании файла – скрываем область и обрабатываем файл
 document.addEventListener('drop', function (e) {
   document.getElementById('globalDropZone').classList.remove('visible');
   const dt = e.dataTransfer;
@@ -395,4 +388,29 @@ darkModeToggle.addEventListener('click', () => {
   } else {
     darkModeToggle.textContent = 'Тёмная тема';
   }
+});
+
+function copyUSDT() {
+  const usdtAddress = "TLY5tBCPMrb6VHBpFWGCN7dprwfdUkGbc3";
+  navigator.clipboard.writeText(usdtAddress).then(() => {
+    alert("USDT TRC-20 address copied to clipboard!");
+  }, (err) => {
+    console.error("Could not copy text: ", err);
+  });
+}
+
+const donationContainer = document.getElementById('donationContainer');
+const hideBtn = document.getElementById('hideDonationBtn');
+const showBtn = document.getElementById('toggleDonationBtn');
+
+hideBtn.addEventListener('click', function() {
+  donationContainer.classList.add('hidden');
+  setTimeout(() => {
+    showBtn.style.display = 'block';
+  }, 500);
+});
+
+showBtn.addEventListener('click', function() {
+  donationContainer.classList.remove('hidden');
+  showBtn.style.display = 'none';
 });
